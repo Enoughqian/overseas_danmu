@@ -1,0 +1,2 @@
+python -m script.get_shopee -i SPIM-EGMQI1QV20K0C -a 137426 -c ph
+python -m script.get_shopee -i SPIM-EGLVUM0FA0G0B -a 136067 -c vn
