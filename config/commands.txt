@@ -1,2 +1,3 @@
 python -m script.get_shopee -i SPIM-EGMQI1QV20K0C -a 137426 -c ph
 python -m script.get_shopee -i SPIM-EGLVUM0FA0G0B -a 136067 -c vn
+python -m script.get_lazada -i f000b953-1811-4d91-8cdf-476f7cee73ff -a 111111111

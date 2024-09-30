@@ -167,7 +167,9 @@ def gen_csv_command():
         if i[0] == "tiktok":
             command = "python -m script.get_tiktok -i {} -a {}".format(i[5], i[1])
         if i[0] == "支付宝直播":
-            command = "python -m script.get_ali -i {} -a {} -t {}".format(i[5], i[1], i[7]) 
+            command = "python -m script.get_ali -i {} -a {} -t {}".format(i[5], i[1], i[7])
+        if i[0] == "lazada":
+            command = "python -m script.get_lazada -i {} -a {}".format(i[5], i[1])
         result.append(command)
     with open("config/commands.txt","w") as f:
         f.write("\n".join(result).strip())
@@ -198,7 +200,32 @@ def insert_tiktok_table(appid, session_id):
             return {"message": "添加成功!", "state": 0}
         except:
             return {"message": "添加失败,未找到对应参数!", "state": 0}
+
+def insert_lazada_table(appid, session_id):
+    appid = str(appid)
+    data = pd.read_csv("config/params_config.csv", encoding="utf-8")
+    data["灵犀id"] = data["灵犀id"].apply(lambda x: str(x))
+
+    if appid in data["灵犀id"].values:
+        return {"message": "直播间已经添加过", "state": 1}
+    else:
+        try:
+            chatroom_id = session_id
+            title = "-"
+
+            temp_data = [
+                ["lazada", str(appid), str(session_id), "不限地区", str(session_id), str(chatroom_id), title,"-"]
+            ]
+            temp_data = pd.DataFrame(temp_data, columns = ['平台名称','灵犀id', '场次id', '地区', '地区参数', '连接参数', '直播间名称',"登录参数"])
             
+            final_result = pd.concat([data, temp_data], axis=0)
+            final_result = final_result.drop_duplicates(subset=["灵犀id"], inplace=False, keep="first")
+            
+            final_result.to_csv("config/params_config.csv", encoding="utf-8", index=None)
+            gen_csv_command()
+            return {"message": "添加成功!", "state": 0}
+        except:
+            return {"message": "添加失败,未找到对应参数!", "state": 0}
 # 删除某条
 def delete_table(appid):
     appid = str(appid)
@@ -241,6 +268,8 @@ def toggle_button_click_add(platform, appid, session_id, area, token_info):
                 result = insert_tiktok_table(appid, session_id)
             elif platform == "支付宝直播":
                 result = insert_zhifubao_table(appid, session_id, token_info)
+            elif platform == "lazada":
+                result = insert_lazada_table(appid, session_id)
             st.write("处理结果:", result["message"])
 
             # 将按钮状态标记为已点击
@@ -277,7 +306,7 @@ def main():
     # 新增直播间，显示地区列表供选择
     st.markdown("### 新增直播间", unsafe_allow_html=True)
     # 平台
-    platform_list = ["shopee","tiktok", "支付宝直播"]
+    platform_list = ["shopee","tiktok", "支付宝直播","lazada"]
     platform = st.selectbox('请选择直播间平台:', [str(temp) for temp in platform_list])
     appid = st.text_input("请输入appid: ")
     session_id = st.text_input("请输入直播间id: ")
